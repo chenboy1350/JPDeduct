@@ -1,0 +1,54 @@
+﻿@model List<TmpDeductModel>
+
+<div style="overflow-x:auto;">
+    <table id="tblDeduct" class="table table-bordered table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>OrderNo</th>
+                <th>ListNo</th>
+                <th>LotNo</th>
+                <th>Article</th>
+                <th>DeductQty</th>
+                <th>QcQty</th>
+                <th>Doc_No</th>
+                <th>DocNo</th>
+                <th>Name</th>
+                <th>ChkS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    string itemId = $"{item.RunDeduct}";
+                    <tr>
+                        <td>@item.OrderNo</td>
+                        <td>@item.ListNo</td>
+                        <td>@item.LotNo</td>
+                        <td>@item.Article</td>
+                        <td class="text-right">@item.DeductQty</td>
+                        <td class="text-right">@item.QcQty</td>
+                        <td>@item.Doc_No</td>
+                        <td>@item.DocNo</td>
+                        <td>@item.Name</td>
+                        <td class="text-center">
+                            <input type="checkbox"
+                                   data-item-id="@itemId"
+                                   @(item.ChkS ? "checked" : "")
+                                   style="width:24px; height:24px; cursor:pointer;" />
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="10" class="text-center">
+                        <span>No data available.</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

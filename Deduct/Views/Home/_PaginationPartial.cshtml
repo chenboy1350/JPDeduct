@@ -1,0 +1,151 @@
+﻿@model PagedListModel<TmpDeductModel>
+@{
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 10;
+}
+
+@if (Model != null && totalPages > 1)
+{
+    <div class="col">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div class="col-md-auto">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <label for="pageSize" class="mb-0">Display:</label>
+                    <select name="pageSize" id="pageSize" class="form-control mr-2">
+                        <option value="10" selected="@(pageSize == 10 ? "selected" : null)">10</option>
+                        <option value="25" selected="@(pageSize == 25 ? "selected" : null)">25</option>
+                        <option value="50" selected="@(pageSize == 50 ? "selected" : null)">50</option>
+                        <option value="100" selected="@(pageSize == 100 ? "selected" : null)">100</option>
+                    </select>
+                    <span>Record per Page</span>
+                </div>
+            </div>
+
+            <div class="col-md-auto">
+                <nav aria-label="Page navigation" class="flex-grow-1">
+                    <ul class="pagination justify-content-center justify-content-md-end mb-0">
+                        @if (currentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="1" aria-label="First">
+                                    <span aria-hidden="true">First</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (currentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="@(currentPage - 1)" aria-label="Previous">
+                                    <span aria-hidden="true">Previous</span>
+                                </a>
+                            </li>
+                        }
+
+                        @{
+                            int startPage = Math.Max(1, currentPage - 2);
+                            int endPage = Math.Min(totalPages, currentPage + 2);
+
+                            if (endPage - startPage < 4)
+                            {
+                                if (startPage == 1)
+                                {
+                                    endPage = Math.Min(totalPages, startPage + 4);
+                                }
+                                else if (endPage == totalPages)
+                                {
+                                    startPage = Math.Max(1, endPage - 4);
+                                }
+                            }
+                        }
+
+                        @if (startPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="1">1</a>
+                            </li>
+                            @if (startPage > 2)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <li class="page-item @(i == currentPage ? "active" : "")">
+                                @if (i == currentPage)
+                                {
+                                    <span class="page-link">@i</span>
+                                }
+                                else
+                                {
+                                    <a class="page-link" href="#" data-page="@i">@i</a>
+                                }
+                            </li>
+                        }
+
+                        @if (endPage < totalPages)
+                        {
+                            @if (endPage < totalPages - 1)
+                            {
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            }
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="@totalPages">@totalPages</a>
+                            </li>
+                        }
+
+                        @if (currentPage < totalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="@(currentPage + 1)" aria-label="Next">
+                                    <span aria-hidden="true">Next</span>
+                                </a>
+                            </li>
+                        }
+
+                        @if (currentPage < totalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="@totalPages" aria-label="Last">
+                                    <span aria-hidden="true">Last</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="text-md-right text-center">
+                @if (Model != null && Model.Items.Any())
+                {
+                    <span class="text-muted">
+                        Result @((currentPage - 1) * pageSize + 1) - @(Math.Min(currentPage * pageSize, Model.TotalCount)) from @Model.TotalCount
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+}
+else if (Model != null && Model.Items.Any())
+{
+    <div class="row mb-3">
+        <div class="col-md-auto">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <label for="pageSize" class="mr-2">Display:</label>
+                <select name="pageSize" id="pageSize" class="form-control mr-2">
+                    <option value="10" selected="@(pageSize == 10 ? "selected" : null)">10</option>
+                    <option value="25" selected="@(pageSize == 25 ? "selected" : null)">25</option>
+                    <option value="50" selected="@(pageSize == 50 ? "selected" : null)">50</option>
+                    <option value="100" selected="@(pageSize == 100 ? "selected" : null)">100</option>
+                </select>
+                <span>Record per Page</span>
+            </div>
+        </div>
+    </div>
+}

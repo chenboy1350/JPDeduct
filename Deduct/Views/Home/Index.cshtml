@@ -1,0 +1,337 @@
+﻿@model PagedListModel<TmpDeductModel>
+@{
+    ViewData["Title"] = "Deduct Management";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int pageSize = ViewBag.PageSize ?? 10;
+}
+
+<div class="text-center">
+    <h1 class="display-4">Deduct</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <a class="btn btn-link text-decoration-none" data-bs-toggle="collapse" href="#searchPanel" role="button" aria-expanded="false" aria-controls="searchPanel">
+            Search Filter
+        </a>
+    </div>
+    <div class="collapse show" id="searchPanel">
+        <div class="card-body">
+            <form id="searchForm">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="orderNo">Order No:</label>
+                            <input id="orderNo" name="orderNo" class="form-control" placeholder="Enter OrderNo" value="@Model.DeductFilter?.OrderNo">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="orderDate">From Date:</label>
+                            <input id="orderDate" name="orderDate" type="date" class="form-control" value="@Model.DeductFilter?.OrderDate?.ToString("yyyy-MM-dd")">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-9">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div class="btn-group d-block">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <button type="button" id="clearBtn" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Action Select Buttons -->
+<div class="mb-3">
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" id="showSelectedBtn" class="btn btn-info">
+            <i class="fas fa-list"></i> Show Selected Items (<span id="selectedCount">0</span>)
+        </button>
+        <button type="button" id="selectAllBtn" class="btn btn-outline-secondary">
+            <i class="fas fa-check-square"></i> Select All
+        </button>
+        <button type="button" id="clearSelectionBtn" class="btn btn-outline-secondary">
+            <i class="fas fa-square"></i> Clear All
+        </button>
+    </div>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="text-center" style="display: none;">
+    <div class="spinner-border" role="status">
+        <span class="sr-only"></span>
+    </div>
+    <p>Loading...</p>
+</div>
+
+<div id="deduct-list">
+    @await Html.PartialAsync("_DeductListPartial", Model.Items)
+</div>
+
+<div id="pagination-container">
+    @await Html.PartialAsync("_PaginationPartial", Model)
+</div>
+
+<!-- Selected Items Modal -->
+<div class="modal fade" id="selectedItemsModal" tabindex="-1" aria-labelledby="selectedItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectedItemsModalLabel">Selected Deduct Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="selectedItemsLoading" class="text-center" style="display: none;">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                    <span class="ms-2">Loading selected items...</span>
+                </div>
+                <div id="selectedItemsContent">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No items selected
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" id="processSelectedBtn" class="btn btn-primary" style="display: none;">
+                    <i class="fas fa-cog"></i> Process Selected Items
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let currentPage = @currentPage;
+            let currentPageSize = @pageSize;
+            let selectedItems = new Set();
+
+            // Search form submission
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                searchData(1, currentPageSize);
+            });
+
+            // Clear button
+            $('#clearBtn').on('click', function() {
+                $('#orderNo').val('');
+                $('#orderDate').val('');
+                searchData(1, currentPageSize);
+            });
+
+            // Page size change
+            $(document).on('change', '#pageSize', function() {
+                currentPageSize = $(this).val();
+                searchData(1, currentPageSize);
+            });
+
+            // Pagination click
+            $(document).on('click', '.page-link[data-page]', function(e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                searchData(page, currentPageSize);
+            });
+
+            // Checkbox change event
+            $(document).on('change', 'input[type="checkbox"][data-item-id]', function() {
+                const itemId = $(this).data('item-id');
+                if ($(this).is(':checked')) {
+                    selectedItems.add(itemId);
+                } else {
+                    selectedItems.delete(itemId);
+                }
+                updateSelectedCount();
+            });
+
+            // Select All button
+            $('#selectAllBtn').on('click', function() {
+                $('input[type="checkbox"][data-item-id]').prop('checked', true).trigger('change');
+            });
+
+            // Clear Selection button
+            $('#clearSelectionBtn').on('click', function() {
+                $('input[type="checkbox"][data-item-id]').prop('checked', false).trigger('change');
+                selectedItems.clear();
+                updateSelectedCount();
+            });
+
+            // Show Selected Items button
+            $('#showSelectedBtn').on('click', function() {
+                if (selectedItems.size === 0) {
+                    alert('Please Select item');
+                    return;
+                }
+                showSelectedItemsModal();
+            });
+
+            // Process Selected Items button
+            $('#processSelectedBtn').on('click', function() {
+                // TODO: Implement process logic
+                alert('Processing ' + selectedItems.size + ' selected items...');
+            });
+
+            function updateSelectedCount() {
+                $('#selectedCount').text(selectedItems.size);
+
+                // Update checkbox states after page reload
+                setTimeout(function() {
+                    $('input[type="checkbox"][data-item-id]').each(function() {
+                        const itemId = $(this).data('item-id');
+                        if (selectedItems.has(itemId)) {
+                            $(this).prop('checked', true);
+                        }
+                    });
+                }, 100);
+            }
+
+            function showSelectedItemsModal() {
+                $('#selectedItemsModal').modal('show');
+                $('#selectedItemsLoading').show();
+                $('#selectedItemsContent').hide();
+
+                const checkedIds = Array.from(selectedItems);
+                const orderNo = $('#orderNo').val();
+                const orderDate = $('#orderDate').val();
+
+                $.ajax({
+                    url: '@Url.Action("GetCheckedItems", "Home")',
+                    type: 'POST',
+                    traditional: true,
+                    data: {
+                        checkedIds: checkedIds,
+                        orderNo: orderNo,
+                        orderDate: orderDate
+                    },
+                    success: function(response) {
+                        if (response.success && response.items && response.items.length > 0) {
+                            let html = '<div class="alert alert-success mb-3">';
+                            html += '<i class="fas fa-check-circle"></i> Selected ' + response.items.length + ' Record';
+                            html += '</div>';
+                            html += '<div class="table-responsive">';
+                            html += '<table class="table table-bordered table-striped table-hover">';
+                            html += '<thead class="thead-dark">';
+                            html += '<tr>';
+                            html += '<th>OrderNo</th>';
+                            html += '<th>ListNo</th>';
+                            html += '<th>LotNo</th>';
+                            html += '<th>Article</th>';
+                            html += '<th>DeductQty</th>';
+                            html += '<th>QcQty</th>';
+                            html += '<th>Doc_No</th>';
+                            html += '<th>DocNo</th>';
+                            html += '<th>Name</th>';
+                            html += '</tr>';
+                            html += '</thead>';
+                            html += '<tbody>';
+
+                            response.items.forEach(function(item) {
+                                html += '<tr>';
+                                html += '<td>' + item.orderNo + '</td>';
+                                html += '<td>' + item.listNo + '</td>';
+                                html += '<td>' + item.lotNo + '</td>';
+                                html += '<td>' + item.article + '</td>';
+                                html += '<td class="text-right">' + item.deductQty + '</td>';
+                                html += '<td class="text-right">' + item.qcQty + '</td>';
+                                html += '<td>' + item.doc_No + '</td>';
+                                html += '<td>' + item.docNo + '</td>';
+                                html += '<td>' + item.name + '</td>';
+                                html += '</tr>';
+                            });
+
+                            html += '</tbody>';
+                            html += '</table>';
+                            html += '</div>';
+
+                            $('#selectedItemsContent').html(html);
+                            $('#processSelectedBtn').show();
+                        } else {
+                            let message = 'Item not found';
+                            if (response.message) {
+                                message += '<br><small class="text-muted">' + response.message + '</small>';
+                            }
+                            $('#selectedItemsContent').html('<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> ' + message + '</div>');
+                            $('#processSelectedBtn').hide();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to load selected items:', error);
+                        $('#selectedItemsContent').html('<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i>err pls try again</div>');
+                        $('#processSelectedBtn').hide();
+                    },
+                    complete: function() {
+                        $('#selectedItemsLoading').hide();
+                        $('#selectedItemsContent').show();
+                    }
+                });
+            }
+
+            function searchData(page, pageSize) {
+                const orderNo = $('#orderNo').val();
+                const orderDate = $('#orderDate').val();
+
+                $('#loadingIndicator').show();
+                $('#deduct-list').hide();
+                $('#pagination-container').hide();
+
+                $.ajax({
+                    url: '@Url.Action("SearchData", "Home")',
+                    type: 'POST',
+                    data: {
+                        orderNo: orderNo,
+                        orderDate: orderDate,
+                        page: page,
+                        pageSize: pageSize
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update the table
+                            $('#deduct-list').html(response.html);
+
+                            // Update pagination
+                            $('#pagination-container').html(response.pagination);
+
+                            // Update current page
+                            currentPage = response.currentPage;
+
+                            // Update checkbox states
+                            updateSelectedCount();
+
+                            // Show content
+                            $('#deduct-list').show();
+                            if (response.totalPages > 1) {
+                                $('#pagination-container').show();
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Search failed:', error);
+                        alert('err pls Try again');
+                    },
+                    complete: function() {
+                        // Hide loading
+                        $('#loadingIndicator').hide();
+                    }
+                });
+            }
+
+            // Initialize selected count
+            updateSelectedCount();
+        });
+    </script>
+}
