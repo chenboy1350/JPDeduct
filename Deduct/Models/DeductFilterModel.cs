@@ -3,6 +3,6 @@
     public class DeductFilterModel
     {
         public string? OrderNo { get; set; }
-        public DateTime? OrderDate { get; set; }
+        public DateTime? RevDate { get; set; }
     }
 }

@@ -51,6 +51,14 @@ namespace Deduct.Service.Implement
         {
             var query = await GetAllTmpDeductsAsync();
 
+            if (filter != null)
+            {
+                if (!string.IsNullOrEmpty(filter.OrderNo))
+                {
+                    query = [.. query.Where(x => x.OrderNo.Contains(filter.OrderNo, StringComparison.OrdinalIgnoreCase))];
+                }
+            }
+
             var totalCount = query.Count();
 
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -61,14 +69,6 @@ namespace Deduct.Service.Implement
                 .Skip(skip)
                 .Take(pageSize)
                 .ToList();
-
-            if (filter != null)
-            {
-                if (!string.IsNullOrEmpty(filter.OrderNo))
-                {
-                    items = [.. items.Where(x => x.OrderNo.Contains(filter.OrderNo, StringComparison.OrdinalIgnoreCase))];
-                }
-            }
 
                 return new PagedListModel<TmpDeductModel>
             {

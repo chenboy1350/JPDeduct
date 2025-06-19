@@ -9,19 +9,9 @@ namespace Deduct.Controllers
     {
         private readonly IDeductService _deductService = deductService;
 
-        public async Task<IActionResult> Index(string orderNo = "", DateTime? orderDate = null, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
-            if (page < 1) page = 1;
-            if (pageSize < 5) pageSize = 5;
-            if (pageSize > 100) pageSize = 100;
-
-            DeductFilterModel filter = new()
-            {
-                OrderNo = orderNo ?? "",
-                OrderDate = orderDate,
-            };
-
-            PagedListModel<TmpDeductModel> model = await _deductService.GetPagedTmpDeductsAsync(page, pageSize, filter);
+            PagedListModel<TmpDeductModel> model = await _deductService.GetPagedTmpDeductsAsync(page, pageSize, new DeductFilterModel());
 
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = model.TotalPages;
@@ -32,7 +22,7 @@ namespace Deduct.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SearchData(string orderNo = "", DateTime? orderDate = null, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> SearchData(string orderNo = "", DateTime? revDate = null, int page = 1, int pageSize = 10)
         {
             if (page < 1) page = 1;
             if (pageSize < 5) pageSize = 5;
@@ -41,7 +31,7 @@ namespace Deduct.Controllers
             DeductFilterModel filter = new()
             {
                 OrderNo = orderNo ?? "",
-                OrderDate = orderDate,
+                RevDate = revDate,
             };
 
             PagedListModel<TmpDeductModel> model = await _deductService.GetPagedTmpDeductsAsync(page, pageSize, filter);
@@ -59,12 +49,12 @@ namespace Deduct.Controllers
                 totalCount = model.TotalCount,
                 currentPage = page,
                 totalPages = model.TotalPages,
-                pageSize = pageSize
+                pageSize
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetCheckedItems(string orderNo = "", DateTime? orderDate = null, List<string> checkedIds = null)
+        public async Task<IActionResult> GetCheckedItems(string orderNo = "", DateTime? revDate = null, List<string>? checkedIds = null)
         {
             try
             {
@@ -73,19 +63,16 @@ namespace Deduct.Controllers
                     return Json(new { success = true, items = new List<object>() });
                 }
 
-                // ใช้ filter เดียวกับที่ใช้ในการค้นหา
                 DeductFilterModel filter = new()
                 {
                     OrderNo = orderNo ?? "",
-                    OrderDate = orderDate,
+                    RevDate = revDate,
                 };
 
-                // ดึงข้อมูลทั้งหมดที่ตรงกับ filter ปัจจุบัน
                 PagedListModel<TmpDeductModel> allData = await _deductService.GetPagedTmpDeductsAsync(1, int.MaxValue, filter);
 
                 var checkedItems = new List<TmpDeductModel>();
 
-                // กรอง items ที่ถูก checked
                 foreach (var id in checkedIds)
                 {
                     var item = allData.Items.FirstOrDefault(x =>
@@ -120,20 +107,6 @@ namespace Deduct.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult Search(PagedListModel<TmpDeductModel> filter)
-        {
-            filter ??= new PagedListModel<TmpDeductModel>();
-
-            return RedirectToAction("Index", new
-            {
-                orderNo = filter.DeductFilter.OrderNo,
-                orderDate = filter.DeductFilter.OrderDate?.ToString("yyyy-MM-dd"),
-                page = 1,
-                pageSize = 10
-            });
-        }
-
         private async Task<string> RenderPartialViewToString(string viewName, object model)
         {
             if (string.IsNullOrEmpty(viewName))
@@ -141,14 +114,19 @@ namespace Deduct.Controllers
 
             ViewData.Model = model;
 
-            using (var writer = new StringWriter())
-            {
-                var viewEngine = HttpContext.RequestServices.GetService(typeof(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine)) as Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine;
-                var viewContext = new ViewContext(ControllerContext, viewEngine.FindView(ControllerContext, viewName, false).View, ViewData, TempData, writer, new Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions());
+            using var writer = new StringWriter();
+            Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine? viewEngine = HttpContext.RequestServices.GetService(typeof(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine)) as Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine ?? throw new InvalidOperationException("View engine not found.");
+            var viewResult = viewEngine.FindView(ControllerContext, viewName, false);
 
-                await viewEngine.FindView(ControllerContext, viewName, false).View.RenderAsync(viewContext);
-                return writer.GetStringBuilder().ToString();
+            if (viewResult.View == null)
+            {
+                throw new InvalidOperationException($"View '{viewName}' not found.");
             }
+
+            var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, writer, new Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions());
+
+            await viewResult.View.RenderAsync(viewContext);
+            return writer.GetStringBuilder().ToString();
         }
     }
 }
