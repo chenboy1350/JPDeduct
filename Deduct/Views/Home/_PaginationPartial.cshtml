@@ -134,18 +134,13 @@
 }
 else if (Model != null && Model.Items.Any())
 {
-    <div class="row mb-3">
-        <div class="col-md-auto">
-            <div class="d-flex align-items-center flex-wrap gap-2">
-                <label for="pageSize" class="mr-2">แสดง:</label>
-                <select name="pageSize" id="pageSize" class="form-control mr-2">
-                    <option value="10" selected="@(pageSize == 10 ? "selected" : null)">10</option>
-                    <option value="25" selected="@(pageSize == 25 ? "selected" : null)">25</option>
-                    <option value="50" selected="@(pageSize == 50 ? "selected" : null)">50</option>
-                    <option value="100" selected="@(pageSize == 100 ? "selected" : null)">100</option>
-                </select>
-                <span>รายการต่อหน้า</span>
+    <div class="col">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div class="text-md-right text-center">
+                <span class="text-muted">
+                    รายการ @((currentPage - 1) * pageSize + 1) - @(Math.Min(currentPage * pageSize, Model.TotalCount)) จากทั้งหมด @Model.TotalCount รายการ
+                </span>
             </div>
         </div>
-    </div>
+    </div>    
 }

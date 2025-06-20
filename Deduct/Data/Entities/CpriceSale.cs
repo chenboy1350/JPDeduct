@@ -4,11 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Deduct.Data;
+namespace Deduct.Data.Entities;
 
 [Table("CPriceSale", Schema = "dbo")]
 [Index("Article", "Barcode", "FnCode", "ListGem", "EpoxyColor", "ListMat", Name = "IX_CPriceSale_3", IsUnique = true)]
-public partial class CPriceSale
+public partial class CpriceSale
 {
     [StringLength(14)]
     [Unicode(false)]

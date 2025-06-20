@@ -1,31 +1,32 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Deduct.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Deduct.Data;
 
-public partial class PrincessrDbContext : DbContext
+public partial class JPDbContext : DbContext
 {
-    public PrincessrDbContext()
-    {
-    }
-
-    public PrincessrDbContext(DbContextOptions<PrincessrDbContext> options)
+    public JPDbContext(DbContextOptions<JPDbContext> options)
         : base(options)
     {
     }
 
-    public virtual DbSet<CPriceSale> CPriceSale { get; set; }
+    public virtual DbSet<CpriceSale> CpriceSale { get; set; }
 
     public virtual DbSet<JobDeduct> JobDeduct { get; set; }
 
     public virtual DbSet<JobDetail> JobDetail { get; set; }
 
+    public virtual DbSet<JobHdeduct> JobHdeduct { get; set; }
+
     public virtual DbSet<JobKeep> JobKeep { get; set; }
 
-    public virtual DbSet<TEmpProfile> TEmpProfile { get; set; }
+    public virtual DbSet<TempProfile> TempProfile { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CPriceSale>(entity =>
+        modelBuilder.Entity<CpriceSale>(entity =>
         {
             entity.HasKey(e => e.Barcode)
                 .IsClustered(false)
@@ -141,6 +142,11 @@ public partial class PrincessrDbContext : DbContext
             entity.Property(e => e.UserName).HasDefaultValue("");
         });
 
+        modelBuilder.Entity<JobHdeduct>(entity =>
+        {
+            entity.Property(e => e.Senddate).HasDefaultValueSql("(getdate())");
+        });
+
         modelBuilder.Entity<JobKeep>(entity =>
         {
             entity.HasKey(e => new { e.JobBarcode, e.Num }).IsClustered(false);
@@ -181,7 +187,7 @@ public partial class PrincessrDbContext : DbContext
                 .HasConstraintName("FK_JobKeep_JobDetail");
         });
 
-        modelBuilder.Entity<TEmpProfile>(entity =>
+        modelBuilder.Entity<TempProfile>(entity =>
         {
             entity.HasKey(e => e.EmpCode).HasFillFactor(90);
 

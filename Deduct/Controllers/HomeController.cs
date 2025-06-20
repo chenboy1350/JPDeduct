@@ -58,7 +58,7 @@ namespace Deduct.Controllers
         {
             try
             {
-                if (checkedIds == null || !checkedIds.Any())
+                if (checkedIds == null || checkedIds.Count == 0)
                 {
                     return Json(new { success = true, items = new List<object>() });
                 }

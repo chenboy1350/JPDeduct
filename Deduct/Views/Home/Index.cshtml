@@ -343,11 +343,9 @@
                             $('#pagination-container').html(response.pagination);  
                             currentPage = response.currentPage;  
                             updateSelectedCount();  
-                            $('#deduct-list').show();  
-                            if (response.totalPages > 1) {  
-                                $('#pagination-container').show();  
-                            }  
-                        }  
+                            $('#deduct-list').show();
+                            $('#pagination-container').show();
+                         }  
                     },  
                     error: function(xhr, status, error) {  
                         console.error('ค้นหาล้มเหลว : ', error);  

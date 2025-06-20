@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Deduct.Data;
+namespace Deduct.Data.Entities;
 
 [PrimaryKey("JobBarcode", "DocNo", "EmpCode")]
 [Table("JobDetail", Schema = "dbo")]

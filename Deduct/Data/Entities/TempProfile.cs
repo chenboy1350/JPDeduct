@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Deduct.Data;
+namespace Deduct.Data.Entities;
 
 [Table("TEmpProfile", Schema = "dbo")]
 [Index("Name", Name = "IX_TEmpProfile", IsUnique = true)]
 [Index("EmpCode", "Name", Name = "IX_TEmpProfile_1")]
-public partial class TEmpProfile
+public partial class TempProfile
 {
     public int EmpLink { get; set; }
 
