@@ -10,6 +10,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<JPDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IDeductService, DeductService>();
+builder.Services.AddScoped<IHDeductService, HDeductService>();
 
 var app = builder.Build();
 

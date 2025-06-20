@@ -1,0 +1,35 @@
+﻿@using Deduct.Data.Entities
+@model List<JobHdeduct>
+
+<div class="table-container">
+    <table id="tblHDeduct" class="table table-bordered table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>SendDoc</th>
+                <th>Senddate</th>
+                <th>Username</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr onclick="showSendDoc(this, '@item.SendDoc')" style="cursor: pointer;">
+                        <td>@item.SendDoc</td>
+                        <td>@item.Senddate</td>
+                        <td>@item.Username</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <span>ไม่พบข้อมูล</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

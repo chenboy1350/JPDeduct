@@ -44,8 +44,8 @@ namespace Deduct.Controllers
             return Json(new
             {
                 success = true,
-                html = await RenderPartialViewToString("_DeductListPartial", model.Items),
-                pagination = await RenderPartialViewToString("_PaginationPartial", model),
+                html = await RenderPartialViewAsync("_DeductListPartial", model.Items),
+                pagination = await RenderPartialViewAsync("_PaginationPartial", model),
                 totalCount = model.TotalCount,
                 currentPage = page,
                 totalPages = model.TotalPages,
@@ -71,7 +71,7 @@ namespace Deduct.Controllers
 
                 PagedListModel<TmpDeductModel> allData = await _deductService.GetPagedTmpDeductsAsync(1, int.MaxValue, filter);
 
-                var checkedItems = new List<TmpDeductModel>();
+                List<TmpDeductModel> checkedItems = [];
 
                 foreach (var id in checkedIds)
                 {
@@ -87,18 +87,7 @@ namespace Deduct.Controllers
                 return Json(new
                 {
                     success = true,
-                    items = checkedItems.Select(item => new
-                    {
-                        OrderNo = item.OrderNo ?? "",
-                        ListNo = item.ListNo ?? "",
-                        LotNo = item.LotNo ?? "",
-                        Article = item.Article ?? "",
-                        DeductQty = item.DeductQty.ToString() ?? "",
-                        QcQty = item.QcQty.ToString() ?? "",
-                        Doc_No = item.Doc_No ?? "",
-                        DocNo = item.DocNo ?? "",
-                        Name = item.Name ?? ""
-                    }).ToList()
+                    html = await RenderPartialViewAsync("_SelectedDeductListPartial", checkedItems)
                 });
             }
             catch (Exception ex)
@@ -107,7 +96,7 @@ namespace Deduct.Controllers
             }
         }
 
-        private async Task<string> RenderPartialViewToString(string viewName, object model)
+        private async Task<string> RenderPartialViewAsync(string viewName, object model)
         {
             if (string.IsNullOrEmpty(viewName))
                 viewName = ControllerContext.ActionDescriptor.ActionName;

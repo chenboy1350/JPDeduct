@@ -111,9 +111,7 @@
                     <span class="ms-2">กำลังโหลดรายการที่เลือก...</span>
                 </div>
                 <div id="selectedItemsContent">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> ไม่พบรายการที่ถูกเลือก
-                    </div>
+                    @await Html.PartialAsync("_SelectedDeductListPartial", Model.Items)
                 </div>
             </div>
             <div class="modal-footer">
@@ -252,46 +250,8 @@
                         revDate: revDate
                     },  
                     success: function(response) {  
-                        if (response.success && response.items && response.items.length > 0) {  
-                            let html = '<div class="alert alert-success mb-3">';
-                            html += '<i class="fas fa-check-circle"></i> เลือกแล้ว ' + response.items.length + ' รายการ';
-                            html += '</div>';
-                            html += '<div class="table-responsive">';
-                            html += '<table class="table table-bordered table-striped table-hover">';
-                            html += '<thead class="thead-dark">';
-                            html += '<tr>';
-                            html += '<th>Order No.</th>';
-                            html += '<th>ลำดับ</th>';
-                            html += '<th>LotNo.</th>';
-                            html += '<th>Article No.</th>';
-                            html += '<th>จน.ดึง</th>';
-                            html += '<th>จน.รับ</th>';
-                            html += '<th>เลขที่บิลตัดบัญชี</th>';
-                            html += '<th>เลขที่บิลจ่ายงาน</th>';
-                            html += '<th>ชื่อช่าง</th>';
-                            html += '</tr>';
-                            html += '</thead>';
-                            html += '<tbody>';
-
-                            response.items.forEach(function(item) {  
-                                html += '<tr>';  
-                                html += '<td>' + item.orderNo + '</td>';  
-                                html += '<td>' + item.listNo + '</td>';  
-                                html += '<td>' + item.lotNo + '</td>';  
-                                html += '<td>' + item.article + '</td>';  
-                                html += '<td class="text-right">' + item.deductQty + '</td>';  
-                                html += '<td class="text-right">' + item.qcQty + '</td>';  
-                                html += '<td>' + item.doc_No + '</td>';  
-                                html += '<td>' + item.docNo + '</td>';  
-                                html += '<td>' + item.name + '</td>';  
-                                html += '</tr>';  
-                            });  
-
-                            html += '</tbody>';  
-                            html += '</table>';  
-                            html += '</div>';  
-
-                            $('#selectedItemsContent').html(html);
+                        if (response.success) {
+                            $('#selectedItemsContent').html(response.html);
                             $('#btnSendTest').show();
                             $('#btnDocSendTest').show();
                             $('#btnSaveTestResult').show();
@@ -339,7 +299,7 @@
                     },  
                     success: function(response) {  
                         if (response.success) {  
-                            $('#deduct-list').html(response.html);  
+                            $('#deduct-list').html(response.html);
                             $('#pagination-container').html(response.pagination);  
                             currentPage = response.currentPage;  
                             updateSelectedCount();  

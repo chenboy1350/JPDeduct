@@ -1,1 +1,134 @@
-﻿
+﻿@using Deduct.Data.Entities  
+
+@{  
+    ViewData["Title"] = "Deduct Management";  
+    int currentPage = ViewBag.CurrentPage ?? 1;  
+    int totalPages = ViewBag.TotalPages ?? 1;  
+    int pageSize = ViewBag.PageSize ?? 10;  
+    List<JobHdeduct> hDeductList = ViewBag.HDeductList;
+}  
+
+<div class="text-center">  
+    <h1 class="display-4">BILLS</h1>  
+</div>  
+
+<div class="row">  
+    <!-- Left Section -->  
+    <div class="col-md-3">  
+        <div id="hDeduct-list">  
+            @await Html.PartialAsync("_HDeductListPartial", hDeductList)  
+        </div>
+    </div>
+
+    <!-- Middle Section -->  
+    <div class="col-md-6">  
+        <!-- Header Section -->  
+        <div class="card-header">  
+            <div class="row mb-3">  
+                <div class="col-md-3">  
+                    <label class="form-label">Order No</label>  
+                    <input type="text" class="form-control" placeholder="Text1">  
+                </div>  
+                <div class="col-md-3">  
+                    <label class="form-label">List No</label>  
+                    <input type="text" class="form-control" placeholder="Text2">  
+                </div>  
+                <div class="col-md-3">  
+                    <label class="form-label">คร่าว</label>  
+                    <input type="text" class="form-control" placeholder="Text3">  
+                </div>  
+            </div>  
+        </div>  
+
+        <!-- Main Table -->  
+        <table class="table form-table table-bordered">  
+            <thead>  
+                <tr>  
+                    <th>ลำดับที่</th>  
+                    <th>Order No.</th>  
+                    <th>No.</th>  
+                    <th>ปริมาณรวม</th>  
+                    <th>ชื่อสินค้า</th>  
+                    <th>สิมป์ 1</th>  
+                    <th>สิมป์ 2</th>  
+                    <th>สิมป์ 3</th>  
+                    <th>สิมป์ 4</th>  
+                    <th>สิมป์ 5</th>  
+                    <th>จำนวน สินค้า</th>  
+                    <th>คร่าว</th>  
+                    <th>วันที่</th>  
+                </tr>  
+            </thead>  
+            <tbody>  
+                <tr>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                    <td></td>  
+                </tr>  
+            </tbody>  
+        </table>  
+    </div>  
+
+    <!-- Right Section -->  
+    <div class="col-md-3">  
+        <img src="" width="100" height="100">  
+    </div>  
+</div>  
+
+<div class="row mt-4">  
+    <div class="col-md-3">  
+        <div class="text-center p-2 border">  
+            <strong>ผู้ทำใบเสร็จสิน</strong>  
+        </div>  
+    </div>  
+    <div class="col-md-3">  
+        <div class="text-center p-2 border">  
+            <strong>ผู้ทำใบครอบครัวสิน</strong>  
+        </div>  
+    </div>  
+    <div class="col-md-3">  
+        <div class="text-center p-2 border">  
+            <strong>ครอบครัว ส่ง</strong>  
+        </div>  
+    </div>  
+    <div class="col-md-3">  
+        <div class="text-center p-2 border">  
+            <strong>ผู้ปิดบัตรคิวน</strong>  
+        </div>  
+    </div>  
+</div>
+
+@section Scripts {
+    <script>
+        function showSendDoc(element, sendDoc) {
+            console.log(sendDoc);
+
+            // Remove background color from all rows (all td elements)
+            var rows = document.querySelectorAll('#tblHDeduct tbody tr');
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll('td');
+                cells.forEach(function(cell) {
+                    cell.style.backgroundColor = '';
+                    cell.style.color = '';
+                });
+            });
+
+            // Apply background color to all td in clicked element
+            var clickedCells = element.querySelectorAll('td');
+            clickedCells.forEach(function(cell) {
+                cell.style.backgroundColor = '#0D6EFD';
+                cell.style.color = '#FFFFFF';
+            });
+        }
+    </script>
+}

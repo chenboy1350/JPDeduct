@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Deduct.Data.Entities;
+﻿using Deduct.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Deduct.Data;
